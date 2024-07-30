@@ -8,6 +8,7 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use(express.static('src'));
+app.use(express.static('./'));
 
 app.listen(1024, () => console.log('Server running on port 1024'));
+// Go to localhost:1024/src/ in your browser
