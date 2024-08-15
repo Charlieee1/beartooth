@@ -22,12 +22,13 @@ let entityFactory = new EntityFactory();
 window.ptom = 100; // pixels to metres scale
 
 var balls = [];
-for (let y = 3; y <= 10; y++) {
+for (let y = 7; y <= 10; y++) {
     for (let x = 1 + (y % 2) / 2; x <= 9; x++) {
         balls.push(entityFactory.createDynamicCircle({x: x + 3, y: y}, .5, 
             Math.round(Math.random()*0xffffff) ).renderedCircle);
     }
 }
+var box = entityFactory.createDynamicRectangle({x: 8, y: 5}, 1, 2, 0xffff00).renderedRect;
 var ground = entityFactory.createFixedRectangle({x: 8, y: 0}, 8, 1, 0x000000);
 
 // Game loop
@@ -37,6 +38,7 @@ setInterval(() => {
 
     // Update the position of the ball graphic to match the physics body
     balls.forEach((ball) => ball.updatePosition());
+    box.updatePosition();
 }, 1000 / 60);
 
 document.body.appendChild(app.canvas);
@@ -44,6 +46,7 @@ document.body.appendChild(app.canvas);
 // Resize function
 function resize() {
     app.renderer.resize(window.innerWidth, window.innerHeight);
+    ground.renderedRect.updatePosition();
 }
 
 // Add event listener for window resize
