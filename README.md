@@ -2,7 +2,7 @@
 an attempt at a platformer
 
 ## Installation Instructions
-Run these commands:
+Install nodeJS, then run these commands:
 ```bash
 git clone https://github.com/Charlieee1/beartooth.git
 cd beartooth
