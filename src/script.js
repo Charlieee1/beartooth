@@ -2,6 +2,7 @@ import * as PIXI from 'pixi.js';
 import * as RAPIER from '@dimforge/rapier2d';
 import { EntityFactory } from './entityFactory';
 import { World } from './world.js';
+import { Player } from './player.js';
 
 window.app = {};
 
@@ -40,68 +41,12 @@ const wall2 = world.addStaticObject(entityFactory.createFixedRectangle({x: physi
 const roof = world.addStaticObject(entityFactory.createFixedRectangle({x: physicsRight / 2, y: physicsTop}, physicsRight, 1, 0x000000));
 
 // Create player
-const player = world.addObject(entityFactory.createDynamicRectangle({x: physicsRight / 2, y: physicsTop / 2}, 1, 1.5, 0xffff00));
-player.controls = {
-    left: 0,
-    right: 0,
-    jump: false,
-    speed: 6,
-    maxSpeed: 10,
-    slowDown: .5,
-    jumpStrength: 20
-};
+const player = new Player(entityFactory, {x: physicsRight / 2, y: physicsTop / 2}, 1, 1.5, 0xffff00);
 app.player = player;
-
-// Event listeners for player controls
-window.addEventListener("keydown", e => {
-    let key = e.key.toLowerCase();
-    if (key == "a" || key == "arrowleft") {
-        player.controls.left = -1;
-    } else if (key == "d" || key == "arrowright") {
-        player.controls.right = 1;
-    } else if (key == "w" || key == "arrowup" || key == " ") {
-        player.controls.jump = true;
-    }
-});
-
-window.addEventListener("keyup", e => {
-    let key = e.key.toLowerCase();
-    if (key == "a" || key == "arrowleft") {
-        player.controls.left = 0;
-    } else if (key == "d" || key == "arrowright") {
-        player.controls.right = 0;
-    }
-});
 
 // Game loop
 setInterval(() => {
-    // Handle player moving left & right
-    let sign = (player.controls.left + player.controls.right);
-    let changeSpeed = sign;
-    let currSpeed = player.rigidBody.linvel();
-    let newSpeed = currSpeed.x;
-    if (sign == 0) { // Slowdown
-        sign = 1;
-        if (newSpeed < 0) changeSpeed = player.controls.slowDown;
-        else if (newSpeed > 0) changeSpeed = -player.controls.slowDown;
-        if (Math.abs(newSpeed) <= player.controls.speed * player.controls.slowDown) {
-            newSpeed = 0;
-            changeSpeed = 0;
-        }
-    }
-    newSpeed += player.controls.speed * changeSpeed;
-    if (changeSpeed != 0) {
-        newSpeed = sign * Math.min(sign * newSpeed, player.controls.maxSpeed);
-    }
-    
-    // Handle player jump
-    let jump = currSpeed.y;
-    if (player.controls.jump) {
-        jump = player.controls.jumpStrength;
-        player.controls.jump = false;
-    }
-
-    player.rigidBody.setLinvel(new RAPIER.Vector2(newSpeed, jump));
+    player.updateControls();
 
     // Step the physics simulation forward
     world.step();
