@@ -12,7 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@dimforge/rapier2d": "^0.14.0",
-    "express": "^4.21.1",
+    "express": "^4.21.2",
     "pixi.js": "^8.2.6"
   },
   "devDependencies": {
