@@ -8,7 +8,7 @@ export default defineConfig({
   build: {
     emptyOutDir: true,
     rollupOptions: {
-      treeshake: true
+      treeshake: false
     }
   },
   css: {
