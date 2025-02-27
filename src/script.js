@@ -21,6 +21,10 @@ async function main() {
         resolution: window.devicePixelRatio || 1,
     });
 
+    // Pixi canvas fix for chrome
+    Papp.canvas.style.width = "100%";
+    Papp.canvas.style.height = "100%";
+
     // Create a rapier world
     const rapierWorld = new RAPIER.World({ x: 0, y: app.settings.rapierGravity });
 
@@ -51,7 +55,7 @@ async function main() {
     const ground = world.addStaticObject(entityFactory.createFixedRectangle({ x: physicsRight / 2, y: 0 }, physicsRight, 1, 0x000000));
     const wall1 = world.addStaticObject(entityFactory.createFixedRectangle({ x: 0, y: physicsTop / 2 }, 1, physicsTop, 0x000000));
     const wall2 = world.addStaticObject(entityFactory.createFixedRectangle({ x: physicsRight, y: physicsTop / 2 }, 1, physicsTop, 0x000000));
-    const wall3 = world.addStaticObject(entityFactory.createFixedRectangle({ x: physicsRight / 2, y: physicsTop / 8 - 1 }, 1, physicsTop / 4, 0x000000));
+    const wall3 = world.addStaticObject(entityFactory.createFixedRectangle({ x: physicsRight / 2, y: physicsTop / 8 - 1 }, 1, 4, 0x000000));
     const roof = world.addStaticObject(entityFactory.createFixedRectangle({ x: physicsRight / 2, y: physicsTop }, physicsRight, 1, 0x000000));
     const block = world.addStaticObject(entityFactory.createFixedRectangle({ x: 3 * physicsRight / 4, y: physicsTop / 4 }, 2, 2, 0x000000));
 
