@@ -1,5 +1,8 @@
-# beartooth
-an attempt at a platformer
+# Beartooth
+An attempt at a platformer.
+
+## Try it in your browser!
+Go to https://charlieee1.github.io/beartooth/pages/ in your browser to see the newest demo. No installation necessary.
 
 ## Installation Instructions
 Install nodeJS, then run these commands:
