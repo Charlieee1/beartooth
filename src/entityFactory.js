@@ -4,7 +4,46 @@ import * as RAPIER from '@dimforge/rapier2d';
 class EntityFactory {
     constructor() { }
 
-    // For the player and static blocks
+    // For the player and other moving non-dynamic blocks
+    createKinematicRectangle(translation, width, height, colour, ccdEnabled = true) {
+        const body = {
+            x: translation.x,
+            y: translation.y,
+            width: width,
+            height: height,
+            velocity: { x: 0, y: 0 }
+        };
+        const rigidBodyDesc = RAPIER.RigidBodyDesc
+            .kinematicPositionBased()
+            .setTranslation(translation.x, translation.y);
+        if (ccdEnabled) {
+            rigidBodyDesc
+                .setCcdEnabled(ccdEnabled)
+                .setSoftCcdPrediction(.5);
+        }
+        const rigidBody = app.world.rapierWorld.createRigidBody(rigidBodyDesc);
+        const colliderDesc = RAPIER.ColliderDesc.cuboid(width / 2, height / 2).setFriction(0);
+        const collider = app.world.rapierWorld.createCollider(colliderDesc, rigidBody);
+        const renderedRect = new PIXI.Graphics();
+        renderedRect.rect(0, 0, width * app.settings.ptom, height * app.settings.ptom).fill(colour);
+        renderedRect.x = app.settings.ptom * (translation.x - width / 2);
+        renderedRect.y = app.Papp.screen.height - app.settings.ptom * (translation.y + height / 2);
+        renderedRect.updatePosition = function () {
+            renderedRect.x = app.settings.ptom * (rigidBody.translation().x - width / 2);
+            renderedRect.y = app.Papp.screen.height - app.settings.ptom * (rigidBody.translation().y + height / 2);
+        }
+        app.Papp.stage.addChild(renderedRect);
+        return {
+            body: body,
+            rigidBodyDesc: rigidBodyDesc,
+            rigidBody: rigidBody,
+            colliderDesc: colliderDesc,
+            collider: collider,
+            rendered: renderedRect
+        };
+    }
+
+    // For static blocks
     createFixedRectangle(translation, width, height, colour) {
         const body = {
             x: translation.x,

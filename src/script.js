@@ -22,7 +22,7 @@ async function main() {
     });
 
     // Create a rapier world
-    const rapierWorld = new RAPIER.World({ x: 0, y: app.settings.gravity });
+    const rapierWorld = new RAPIER.World({ x: 0, y: app.settings.rapierGravity });
 
     // Create the entity factory
     const entityFactory = new EntityFactory();
@@ -36,12 +36,12 @@ async function main() {
     window.physicsRight = window.innerWidth / app.settings.ptom;
 
     // Create player
-    const player = new Player({ x: physicsRight / 2, y: app.settings.playerHeight / 2 + .5 });
+    const player = new Player({ x: physicsRight / 2 + 2, y: app.settings.playerHeight / 2 + .5 });
     app.player = player;
     world.setPlayer(player);
 
     // Set up non-player rigid-bodies
-    for (let y = 2; y <= physicsTop - 2; y++) {
+    for (let y = 2; y <= physicsTop / 2 - 2; y++) {
         for (let x = 1 + (y % 2) / 2; x <= physicsRight / 2 - 2; x++) {
             let ball = world.addObject(entityFactory.createDynamicCircle({ x: x, y: y }, .5,
                 Math.round(Math.random() * 0xffffff)));
@@ -51,7 +51,9 @@ async function main() {
     const ground = world.addStaticObject(entityFactory.createFixedRectangle({ x: physicsRight / 2, y: 0 }, physicsRight, 1, 0x000000));
     const wall1 = world.addStaticObject(entityFactory.createFixedRectangle({ x: 0, y: physicsTop / 2 }, 1, physicsTop, 0x000000));
     const wall2 = world.addStaticObject(entityFactory.createFixedRectangle({ x: physicsRight, y: physicsTop / 2 }, 1, physicsTop, 0x000000));
+    const wall3 = world.addStaticObject(entityFactory.createFixedRectangle({ x: physicsRight / 2, y: physicsTop / 8 - 1 }, 1, physicsTop / 4, 0x000000));
     const roof = world.addStaticObject(entityFactory.createFixedRectangle({ x: physicsRight / 2, y: physicsTop }, physicsRight, 1, 0x000000));
+    const block = world.addStaticObject(entityFactory.createFixedRectangle({ x: 3 * physicsRight / 4, y: physicsTop / 4 }, 2, 2, 0x000000));
 
     document.body.appendChild(Papp.canvas);
 

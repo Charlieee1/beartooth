@@ -17,3 +17,15 @@ To build, run:
 ```bash
 npm run build
 ```
+To preview the build with vite, run:
+```bash
+npm run preview
+```
+Alternatively, build and preview at once:
+```bash
+npm run bp
+```
+To copy the /dist folder to /pages (for github pages deployment), run:
+```bash
+npm run pages
+```

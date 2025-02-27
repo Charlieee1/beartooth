@@ -169,6 +169,38 @@ class SpatialPartitioning {
 
         return cells;
     }
+
+    // Check if two objects intersect or touch each other
+    checkIntersect(obj1, obj2) {
+        return Math.abs(obj1.x - obj2.x) < .5 * (obj1.width + obj2.width)
+            && Math.abs(obj1.y - obj2.y) <= .5 * (obj1.height + obj2.height);
+    }
+
+    // Find all objects in the partition that intersect or touch a given object
+    getIntersectingObjects(object) {
+        const objects = new Set();
+        // Make a slightly bigger object to get surrounding cells
+        // if the object is on the edge of a cell
+        const biggerObject = {
+            x: object.x,
+            y: object.y,
+            width: object.width + .1,
+            height: object.height + .1
+        };
+
+        // Loop through each cell the object occupies and borders
+        this.getOccupiedCells(biggerObject).forEach((cell) => {
+            // Loop through each object in each cell
+            this.getGrid(cell.quadrant)[cell.i][cell.j].forEach((potentialObject) => {
+                if (potentialObject in objects) return; // Early return
+                if (this.checkIntersect(object, potentialObject)) {
+                    objects.add(potentialObject);
+                }
+            });
+        });
+
+        return Array.from(objects);
+    }
 }
 
 // Custom world with my own physics (not rapier) for controlling the player movement
@@ -194,13 +226,58 @@ class CustomWorld {
 
     // Physics step and rendering update
     step() {
-        // TODO: Physics
-        this.player.y += this.direction * .1;
-        if (this.player.y <= app.settings.playerHeight / 2 + .5) {
-            this.direction = 1;
-        } else if (this.player.y >= physicsTop - 2) {
-            this.direction = -1;
+        app.player.controls.canJump = false;
+        this.player.velocity.y += app.settings.gravity;
+        const prevX = this.player.x;
+        const prevY = this.player.y;
+        this.player.x += this.player.velocity.x;
+        this.player.y += this.player.velocity.y;
+        const ySign = Math.sign(this.player.velocity.y);
+        const xSign = Math.sign(this.player.velocity.x);
+        let intersectingObjects = this.partitioning.getIntersectingObjects(this.player);
+        // What the x and y velocities will change to
+        let newXVel = this.player.velocity.x;
+        let newYVel = this.player.velocity.y;
+        while (intersectingObjects.length > 0) {
+            // console.log("checking1");
+            // Whether the player was moved back or not
+            let playerMoved = false;
+            while (intersectingObjects.length > 0) {
+                // console.log("checking2");
+                // Handle intersection by moving back player required amount
+                const interObj = intersectingObjects.pop();
+                // The maximum (or minimum) y value the player can go to
+                const yLimit = interObj.y - .5 * ySign * (interObj.height + this.player.height);
+                if (ySign * this.player.y > ySign * yLimit && ySign * prevY <= ySign * yLimit) {
+                    this.player.y = yLimit;
+                    // If landing on top of a block, regain the player's jump
+                    if (ySign === -1)
+                        app.player.controls.canJump = true;
+                    playerMoved = true;
+                    newYVel = 0;
+                }
+                // The maximum (or minimum) x value the player can go to
+                const xLimit = interObj.x - .5 * xSign * (interObj.width + this.player.width);
+                if (xSign * this.player.x > xSign * xLimit && xSign * prevX <= xSign * xLimit) {
+                    this.player.x = xLimit;
+                    // Enable walljumping
+                    //app.player.controls.canJump = true;
+                    playerMoved = true;
+                    newXVel = 0;
+                }
+            }
+
+            // Check again for intersections
+            if (playerMoved)
+                intersectingObjects = this.partitioning.getIntersectingObjects(this.player);
         }
+        this.player.velocity = { x: newXVel, y: newYVel };
+        // this.player.y += this.direction * .1;
+        // if (this.player.y <= app.settings.playerHeight / 2 + .5) {
+        //     this.direction = 1;
+        // } else if (this.player.y >= physicsTop - 2) {
+        //     this.direction = -1;
+        // }
     }
 }
 

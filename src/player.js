@@ -14,7 +14,7 @@ class Player {
     constants;
 
     constructor(position) {
-        let playerEntity = app.entityFactory.createFixedRectangle(
+        let playerEntity = app.entityFactory.createKinematicRectangle(
             position,
             app.settings.playerWidth,
             app.settings.playerHeight,
@@ -78,22 +78,22 @@ class Player {
         let newSpeed = currSpeed.x;
         if (sign == 0) { // Slowdown
             sign = 1;
-            if (newSpeed < 0) changeSpeed = this.controls.slowDown;
-            else if (newSpeed > 0) changeSpeed = -this.controls.slowDown;
-            if (Math.abs(newSpeed) <= this.controls.speed * this.controls.slowDown) {
+            if (newSpeed < 0) changeSpeed = app.settings.playerConstants.slowDown;
+            else if (newSpeed > 0) changeSpeed = -app.settings.playerConstants.slowDown;
+            if (Math.abs(newSpeed) <= app.settings.playerConstants.speed * app.settings.playerConstants.slowDown) {
                 newSpeed = 0;
                 changeSpeed = 0;
             }
         }
-        newSpeed += this.controls.speed * changeSpeed;
+        newSpeed += app.settings.playerConstants.speed * changeSpeed;
         if (changeSpeed != 0) {
-            newSpeed = sign * Math.min(sign * newSpeed, this.controls.maxSpeed);
+            newSpeed = sign * Math.min(sign * newSpeed, app.settings.playerConstants.maxSpeed);
         }
 
         // Handle player jump
         let jump = currSpeed.y;
         if (this.controls.jump && this.controls.canJump) {
-            jump = max(jump, 0) + this.controls.jumpStrength;
+            jump = Math.max(jump, 0) + app.settings.playerConstants.jumpStrength;
         }
         this.controls.jump = false;
         this.controls.canJump = false;

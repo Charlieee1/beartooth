@@ -6,12 +6,13 @@ const settings = {
     playerHeight: 1.5,
     playerColour: 0xffff00,
     playerConstants: {
-        speed: 6,
-        maxSpeed: 10,
+        speed: .2,
+        maxSpeed: .3,
         slowDown: .5,
-        jumpStrength: 2
+        jumpStrength: .7
     },
-    gravity: -50,
+    gravity: -.07,
+    rapierGravity: -50,
     partitionCellWidth: 30,
     partitionCellHeight: 20
 };
