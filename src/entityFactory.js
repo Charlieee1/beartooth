@@ -2,23 +2,32 @@ import * as PIXI from 'pixi.js';
 import * as RAPIER from '@dimforge/rapier2d';
 
 class EntityFactory {
-    constructor() {}
+    constructor() { }
 
+    // For the player and static blocks
     createFixedRectangle(translation, width, height, colour) {
-        let rigidBodyDesc = RAPIER.RigidBodyDesc.fixed().setTranslation(translation.x, translation.y);
-        let rigidBody = app.world.world.createRigidBody(rigidBodyDesc);
-        let colliderDesc = RAPIER.ColliderDesc.cuboid(width / 2, height / 2).setFriction(0);
-        let collider = app.world.world.createCollider(colliderDesc, rigidBody);
-        let renderedRect = new PIXI.Graphics();
-        renderedRect.rect(0, 0, width * ptom, height * ptom).fill(colour);
-        renderedRect.x = ptom * (translation.x - width / 2);
-        renderedRect.y = app.renderedWorld.screen.height - ptom * (translation.y + height / 2);
+        const body = {
+            x: translation.x,
+            y: translation.y,
+            width: width,
+            height: height,
+            velocity: { x: 0, y: 0 }
+        };
+        const rigidBodyDesc = RAPIER.RigidBodyDesc.fixed().setTranslation(translation.x, translation.y);
+        const rigidBody = app.world.rapierWorld.createRigidBody(rigidBodyDesc);
+        const colliderDesc = RAPIER.ColliderDesc.cuboid(width / 2, height / 2).setFriction(0);
+        const collider = app.world.rapierWorld.createCollider(colliderDesc, rigidBody);
+        const renderedRect = new PIXI.Graphics();
+        renderedRect.rect(0, 0, width * app.settings.ptom, height * app.settings.ptom).fill(colour);
+        renderedRect.x = app.settings.ptom * (translation.x - width / 2);
+        renderedRect.y = app.Papp.screen.height - app.settings.ptom * (translation.y + height / 2);
         renderedRect.updatePosition = function () {
-            renderedRect.x = ptom * (rigidBody.translation().x - width / 2);
-            renderedRect.y = app.renderedWorld.screen.height - ptom * (rigidBody.translation().y + height / 2);
+            renderedRect.x = app.settings.ptom * (rigidBody.translation().x - width / 2);
+            renderedRect.y = app.Papp.screen.height - app.settings.ptom * (rigidBody.translation().y + height / 2);
         }
-        app.renderedWorld.stage.addChild(renderedRect);
+        app.Papp.stage.addChild(renderedRect);
         return {
+            body: body,
             rigidBodyDesc: rigidBodyDesc,
             rigidBody: rigidBody,
             colliderDesc: colliderDesc,
@@ -27,27 +36,28 @@ class EntityFactory {
         };
     }
 
+    // No use yet
     createDynamicRectangle(translation, width, height, colour, rotationLocked = true, ccdEnabled = true) {
         let rigidBodyDesc = RAPIER.RigidBodyDesc.dynamic()
             .setTranslation(translation.x, translation.y);
         if (ccdEnabled) {
             rigidBodyDesc
-            .setCcdEnabled(ccdEnabled)
-            .setSoftCcdPrediction(1);
+                .setCcdEnabled(ccdEnabled)
+                .setSoftCcdPrediction(1);
         }
         if (rotationLocked) rigidBodyDesc.lockRotations();
-        let rigidBody = app.world.world.createRigidBody(rigidBodyDesc);
+        let rigidBody = app.world.rapierWorld.createRigidBody(rigidBodyDesc);
         let colliderDesc = RAPIER.ColliderDesc.cuboid(width / 2, height / 2).setFriction(0);
-        let collider = app.world.world.createCollider(colliderDesc, rigidBody);
+        let collider = app.world.rapierWorld.createCollider(colliderDesc, rigidBody);
         let renderedRect = new PIXI.Graphics();
-        renderedRect.rect(0, 0, width * ptom, height * ptom).fill(colour);
-        renderedRect.x = ptom * (translation.x - width / 2);
-        renderedRect.y = app.renderedWorld.screen.height - ptom * (translation.y + height / 2);
+        renderedRect.rect(0, 0, width * app.settings.ptom, height * app.settings.ptom).fill(colour);
+        renderedRect.x = app.settings.ptom * (translation.x - width / 2);
+        renderedRect.y = app.Papp.screen.height - app.settings.ptom * (translation.y + height / 2);
         renderedRect.updatePosition = function () {
-            renderedRect.x = ptom * (rigidBody.translation().x - width / 2);
-            renderedRect.y = app.renderedWorld.screen.height - ptom * (rigidBody.translation().y + height / 2);
+            renderedRect.x = app.settings.ptom * (rigidBody.translation().x - width / 2);
+            renderedRect.y = app.Papp.screen.height - app.settings.ptom * (rigidBody.translation().y + height / 2);
         }
-        app.renderedWorld.stage.addChild(renderedRect);
+        app.Papp.stage.addChild(renderedRect);
         return {
             rigidBodyDesc: rigidBodyDesc,
             rigidBody: rigidBody,
@@ -57,23 +67,24 @@ class EntityFactory {
         };
     }
 
+    // For fun moving circles
     createDynamicCircle(translation, radius, colour, ccdEnabled = true) {
         let rigidBodyDesc = RAPIER.RigidBodyDesc.dynamic().setTranslation(translation.x, translation.y);
         if (ccdEnabled) {
             rigidBodyDesc
-            .setCcdEnabled(ccdEnabled)
-            .setSoftCcdPrediction(.5);
+                .setCcdEnabled(ccdEnabled)
+                .setSoftCcdPrediction(.5);
         }
-        let rigidBody = app.world.world.createRigidBody(rigidBodyDesc);
+        let rigidBody = app.world.rapierWorld.createRigidBody(rigidBodyDesc);
         let colliderDesc = RAPIER.ColliderDesc.ball(radius).setFriction(0);
-        let collider = app.world.world.createCollider(colliderDesc, rigidBody);
+        let collider = app.world.rapierWorld.createCollider(colliderDesc, rigidBody);
         let renderedCircle = new PIXI.Graphics();
-        renderedCircle.circle(0, 0, radius * ptom).fill(colour);
+        renderedCircle.circle(0, 0, radius * app.settings.ptom).fill(colour);
         renderedCircle.updatePosition = function () {
-            renderedCircle.x = ptom * rigidBody.translation().x;
-            renderedCircle.y = app.renderedWorld.screen.height - ptom * rigidBody.translation().y;
+            renderedCircle.x = app.settings.ptom * rigidBody.translation().x;
+            renderedCircle.y = app.Papp.screen.height - app.settings.ptom * rigidBody.translation().y;
         }
-        app.renderedWorld.stage.addChild(renderedCircle);
+        app.Papp.stage.addChild(renderedCircle);
         return {
             rigidBodyDesc: rigidBodyDesc,
             rigidBody: rigidBody,

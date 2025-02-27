@@ -1,41 +1,46 @@
 import * as RAPIER from '@dimforge/rapier2d';
 
 class Player {
+    body;
     rigidBodyDesc;
     rigidBody;
     colliderDesc;
     collider;
     rendered;
-    sensorDesc;
-    sensor;
     keydown;
     keyup;
 
-    constructor(entityFactory, translation, width, height, colour) {
-        let player = entityFactory.createDynamicRectangle(translation, width, height, colour);
-        this.rigidBodyDesc = player.rigidBodyDesc;
-        this.rigidBody = player.rigidBody;
-        this.colliderDesc = player.colliderDesc;
-        this.collider = player.collider;
-        this.rendered = player.rendered;
-        this.sensorDesc = RAPIER.ColliderDesc.cuboid(.5, 1)
-            .setTranslation(0, -.75)
-            .setDensity(0)
-            .setSensor(true);
-        this.sensor = app.world.world.createCollider(this.sensorDesc, this.rigidBody);
-        this.sensor.handleCollision = event => {
-            this.controls.canJump = true;
-        };
+    controls;
+    constants;
 
+    constructor(position) {
+        let playerEntity = app.entityFactory.createFixedRectangle(
+            position,
+            app.settings.playerWidth,
+            app.settings.playerHeight,
+            app.settings.playerColour
+        );
+        this.body = playerEntity.body;
+        this.rigidBodyDesc = playerEntity.rigidBodyDesc;
+        this.rigidBody = playerEntity.rigidBody;
+        this.colliderDesc = playerEntity.colliderDesc;
+        this.collider = playerEntity.collider;
+        this.rendered = playerEntity.rendered;
+        // this.sensorDesc = RAPIER.ColliderDesc.cuboid(.5, 1)
+        //     .setTranslation(0, -.75)
+        //     .setDensity(0)
+        //     .setSensor(true);
+        // this.sensor = app.world.world.createCollider(this.sensorDesc, this.rigidBody);
+        // this.sensor.handleCollision = event => {
+        //     this.controls.canJump = true;
+        // };
+
+        this.constants = app.settings.playerControls;
         this.controls = {
-            left: 0,
-            right: 0,
-            jump: false,
-            canJump: false,
-            speed: 6,
-            maxSpeed: 10,
-            slowDown: .5,
-            jumpStrength: 20
+            left: 0,       // Is pressing left
+            right: 0,      // Is pressing right
+            jump: false,   // Is trying to jump
+            canJump: false // Can jump
         };
 
         // Event listeners for player controls
@@ -59,8 +64,6 @@ class Player {
         }
         window.addEventListener("keydown", this.keydown);
         window.addEventListener("keyup", this.keyup);
-
-        app.world.addObject(this);
     }
 
     updatePosition() {
@@ -71,7 +74,7 @@ class Player {
         // Handle player moving left & right
         let sign = (this.controls.left + this.controls.right);
         let changeSpeed = sign;
-        let currSpeed = this.rigidBody.linvel();
+        let currSpeed = this.body.velocity;
         let newSpeed = currSpeed.x;
         if (sign == 0) { // Slowdown
             sign = 1;
@@ -86,16 +89,16 @@ class Player {
         if (changeSpeed != 0) {
             newSpeed = sign * Math.min(sign * newSpeed, this.controls.maxSpeed);
         }
-        
+
         // Handle player jump
         let jump = currSpeed.y;
         if (this.controls.jump && this.controls.canJump) {
-            jump = this.controls.jumpStrength;
+            jump = max(jump, 0) + this.controls.jumpStrength;
         }
         this.controls.jump = false;
         this.controls.canJump = false;
 
-        this.rigidBody.setLinvel(new RAPIER.Vector2(newSpeed, jump));
+        this.body.velocity = { x: newSpeed, y: jump };
     }
 }
 

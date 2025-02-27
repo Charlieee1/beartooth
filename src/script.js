@@ -1,17 +1,19 @@
 import * as PIXI from 'pixi.js';
 import * as RAPIER from '@dimforge/rapier2d';
-import { EntityFactory } from './entityFactory';
+import { EntityFactory } from './entityFactory.js';
 import { World } from './world.js';
 import { Player } from './player.js';
-
-window.app = {};
-
-// Create a Pixi Application
-var Papp = new PIXI.Application();
-app.renderedWorld = Papp;
+import { settings } from './settings.js';
 
 // Create an async main function
 async function main() {
+    const app = {}
+    window.app = app;
+    app.settings = settings;
+
+    // Create a Pixi Application
+    const Papp = new PIXI.Application();
+    app.Papp = Papp;
     await Papp.init({
         width: window.innerWidth,
         height: window.innerHeight,
@@ -19,15 +21,24 @@ async function main() {
         resolution: window.devicePixelRatio || 1,
     });
 
+    // Create a rapier world
+    const rapierWorld = new RAPIER.World({ x: 0, y: app.settings.gravity });
+
+    // Create the entity factory
+    const entityFactory = new EntityFactory();
+    app.entityFactory = entityFactory;
+
     // Create a world
-    let world = new World(new RAPIER.World({ x: 0.0, y: -50 }));
+    const world = new World(rapierWorld, Papp);
     app.world = world;
 
-    let entityFactory = new EntityFactory();
+    window.physicsTop = window.innerHeight / app.settings.ptom;
+    window.physicsRight = window.innerWidth / app.settings.ptom;
 
-    window.ptom = 40; // pixels to metres scale
-    window.physicsTop = window.innerHeight / ptom;
-    window.physicsRight = window.innerWidth / ptom;
+    // Create player
+    const player = new Player({ x: physicsRight / 2, y: app.settings.playerHeight / 2 + .5 });
+    app.player = player;
+    world.setPlayer(player);
 
     // Set up non-player rigid-bodies
     for (let y = 2; y <= physicsTop - 2; y++) {
@@ -42,19 +53,13 @@ async function main() {
     const wall2 = world.addStaticObject(entityFactory.createFixedRectangle({ x: physicsRight, y: physicsTop / 2 }, 1, physicsTop, 0x000000));
     const roof = world.addStaticObject(entityFactory.createFixedRectangle({ x: physicsRight / 2, y: physicsTop }, physicsRight, 1, 0x000000));
 
-    // Create player
-    const player = new Player(entityFactory, { x: physicsRight / 2, y: physicsTop / 2 }, 1, 1.5, 0xffff00);
-    app.player = player;
+    document.body.appendChild(Papp.canvas);
 
     // Game loop
     setInterval(() => {
-        player.updateControls();
-
         // Step the physics simulation forward
         world.step();
     }, 1000 / 60);
-
-    document.body.appendChild(Papp.canvas);
 
     // Resize function
     function resize() {
