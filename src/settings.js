@@ -1,7 +1,5 @@
 // Global project constants
 const settings = {
-    // Pixels to metres scale (rendering world to physics world)
-    ptom: 40,
     playerWidth: 1,
     playerHeight: 1.5,
     playerColour: 0xffff00,
@@ -14,7 +12,12 @@ const settings = {
     gravity: -.07,
     rapierGravity: -50,
     partitionCellWidth: 30,
-    partitionCellHeight: 20
+    partitionCellHeight: 20,
+    // Metres per window width
+    mtow: 30,
+    // Pixels to metres scale (rendering world to physics world)
+    ptom: 40
 };
+settings.ptom = window.innerWidth / settings.mtow;
 
 export { settings };

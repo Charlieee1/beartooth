@@ -170,13 +170,25 @@ class SpatialPartitioning {
         return cells;
     }
 
-    // Check if two objects intersect or touch each other
+    // Check if two objects intersect each other
     checkIntersect(obj1, obj2) {
         return Math.abs(obj1.x - obj2.x) < .5 * (obj1.width + obj2.width)
+            && Math.abs(obj1.y - obj2.y) < .5 * (obj1.height + obj2.height);
+    }
+
+    // Check if two objects touch each other
+    checkTouch(obj1, obj2) {
+        return Math.abs(obj1.x - obj2.x) === .5 * (obj1.width + obj2.width)
+            && Math.abs(obj1.y - obj2.y) === .5 * (obj1.height + obj2.height);
+    }
+
+    // Check if two objects intersect or touch each other
+    checkIntersectOrTouch(obj1, obj2) {
+        return Math.abs(obj1.x - obj2.x) <= .5 * (obj1.width + obj2.width)
             && Math.abs(obj1.y - obj2.y) <= .5 * (obj1.height + obj2.height);
     }
 
-    // Find all objects in the partition that intersect or touch a given object
+    // Find all objects in the partition that intersect a given object
     getIntersectingObjects(object) {
         const objects = new Set();
         // Make a slightly bigger object to get surrounding cells
@@ -239,31 +251,49 @@ class CustomWorld {
         let newXVel = this.player.velocity.x;
         let newYVel = this.player.velocity.y;
         while (intersectingObjects.length > 0) {
-            // console.log("checking1");
             // Whether the player was moved back or not
             let playerMoved = false;
             while (intersectingObjects.length > 0) {
-                // console.log("checking2");
                 // Handle intersection by moving back player required amount
                 const interObj = intersectingObjects.pop();
-                // The maximum (or minimum) y value the player can go to
-                const yLimit = interObj.y - .5 * ySign * (interObj.height + this.player.height);
-                if (ySign * this.player.y > ySign * yLimit && ySign * prevY <= ySign * yLimit) {
-                    this.player.y = yLimit;
-                    // If landing on top of a block, regain the player's jump
-                    if (ySign === -1)
-                        app.player.controls.canJump = true;
-                    playerMoved = true;
-                    newYVel = 0;
+
+                // Functions for handling y value and x value calculations
+                function calcY(world) {
+                    // The maximum (or minimum) y value the player can go to
+                    const yLimit = interObj.y - .5 * ySign * (interObj.height + world.player.height);
+                    if (ySign * world.player.y > ySign * yLimit && ySign * prevY <= ySign * yLimit) {
+                        world.player.y = yLimit;
+                        // If landing on top of a block, regain the player's jump
+                        if (ySign === -1)
+                            app.player.controls.canJump = true;
+                        playerMoved = true;
+                        newYVel = 0;
+                    }
                 }
-                // The maximum (or minimum) x value the player can go to
-                const xLimit = interObj.x - .5 * xSign * (interObj.width + this.player.width);
-                if (xSign * this.player.x > xSign * xLimit && xSign * prevX <= xSign * xLimit) {
-                    this.player.x = xLimit;
-                    // Enable walljumping
-                    //app.player.controls.canJump = true;
-                    playerMoved = true;
-                    newXVel = 0;
+                function calcX(world) {
+                    // The maximum (or minimum) x value the player can go to
+                    const xLimit = interObj.x - .5 * xSign * (interObj.width + world.player.width);
+                    if (xSign * world.player.x > xSign * xLimit && xSign * prevX <= xSign * xLimit) {
+                        world.player.x = xLimit;
+                        // Enable walljumping
+                        //app.player.controls.canJump = true;
+                        playerMoved = true;
+                        newXVel = 0;
+                    }
+                }
+
+                // Determining order of checking x & y
+                let calc1 = calcX;
+                let calc2 = calcY;
+                if (Math.abs(this.player.velocity.y) <= Math.abs(this.player.velocity.x)) {
+                    calc1 = calcY;
+                    calc2 = calcX;
+                }
+
+                // Check in correct order, skipping the second check if possible
+                calc1(this);
+                if (this.partitioning.checkIntersect(interObj, this.player)) {
+                    calc2(this);
                 }
             }
 
@@ -272,12 +302,6 @@ class CustomWorld {
                 intersectingObjects = this.partitioning.getIntersectingObjects(this.player);
         }
         this.player.velocity = { x: newXVel, y: newYVel };
-        // this.player.y += this.direction * .1;
-        // if (this.player.y <= app.settings.playerHeight / 2 + .5) {
-        //     this.direction = 1;
-        // } else if (this.player.y >= physicsTop - 2) {
-        //     this.direction = -1;
-        // }
     }
 }
 
@@ -333,7 +357,7 @@ class World {
     step() {
         this.player.updateControls();
         this.customWorld.step();
-        this.player.rigidBody.setTranslation(this.player.body);
+        this.player.rigidBody.setNextKinematicTranslation(this.player.body);
         this.rapierWorld.step();
         this.updatePosition();
     }
