@@ -32,6 +32,10 @@ class EntityFactory {
             renderedRect.x = app.settings.ptom * (rigidBody.translation().x - width / 2);
             renderedRect.y = app.Papp.screen.height - app.settings.ptom * (rigidBody.translation().y + height / 2);
         }
+        renderedRect.updateScale = function () {
+            renderedRect.width = 2 * colliderDesc.shape.halfExtents.x * app.settings.ptom;
+            renderedRect.height = 2 * colliderDesc.shape.halfExtents.y * app.settings.ptom;
+        }
         app.Papp.stage.addChild(renderedRect);
         return {
             body: body,
@@ -63,6 +67,10 @@ class EntityFactory {
         renderedRect.updatePosition = function () {
             renderedRect.x = app.settings.ptom * (rigidBody.translation().x - width / 2);
             renderedRect.y = app.Papp.screen.height - app.settings.ptom * (rigidBody.translation().y + height / 2);
+        }
+        renderedRect.updateScale = function () {
+            renderedRect.width = 2 * colliderDesc.shape.halfExtents.x * app.settings.ptom;
+            renderedRect.height = 2 * colliderDesc.shape.halfExtents.y * app.settings.ptom;
         }
         app.Papp.stage.addChild(renderedRect);
         return {
@@ -96,6 +104,10 @@ class EntityFactory {
             renderedRect.x = app.settings.ptom * (rigidBody.translation().x - width / 2);
             renderedRect.y = app.Papp.screen.height - app.settings.ptom * (rigidBody.translation().y + height / 2);
         }
+        renderedRect.updateScale = function () {
+            renderedRect.width = 2 * colliderDesc.shape.halfExtents.x * app.settings.ptom;
+            renderedRect.height = 2 * colliderDesc.shape.halfExtents.y * app.settings.ptom;
+        }
         app.Papp.stage.addChild(renderedRect);
         return {
             rigidBodyDesc: rigidBodyDesc,
@@ -122,6 +134,10 @@ class EntityFactory {
         renderedCircle.updatePosition = function () {
             renderedCircle.x = app.settings.ptom * rigidBody.translation().x;
             renderedCircle.y = app.Papp.screen.height - app.settings.ptom * rigidBody.translation().y;
+        }
+        renderedCircle.updateScale = function () {
+            renderedCircle.width = 2 * colliderDesc.shape.radius * app.settings.ptom;
+            renderedCircle.height = 2 * colliderDesc.shape.radius * app.settings.ptom;
         }
         app.Papp.stage.addChild(renderedCircle);
         return {

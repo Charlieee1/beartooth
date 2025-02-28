@@ -36,8 +36,8 @@ async function main() {
     const world = new World(rapierWorld, Papp);
     app.world = world;
 
-    window.physicsTop = app.settings.partitionCellHeight;
-    window.physicsRight = app.settings.partitionCellWidth;
+    window.physicsTop = app.settings.mtow * .55;
+    window.physicsRight = app.settings.mtow;
 
     // Create player
     const player = new Player({ x: 3 * physicsRight / 4 + 2, y: app.settings.playerHeight / 2 + .5 });
@@ -45,8 +45,8 @@ async function main() {
     world.setPlayer(player);
 
     // Set up non-player rigid-bodies
-    for (let y = 1; y <= 6; y++) {
-        for (let x = 1 + (y % 2) / 2; x <= 3 * physicsRight / 4 - 2; x++) {
+    for (let y = 1; y <= 4; y++) {
+        for (let x = 1 + (y % 2) / 2; x <= 3 * physicsRight / 4 - 10; x++) {
             let ball = world.addObject(entityFactory.createDynamicCircle({ x: x, y: y }, .5,
                 Math.round(Math.random() * 0xffffff)));
             ball.collider.setDensity(.05);
@@ -56,8 +56,17 @@ async function main() {
     const wall1 = world.addStaticObject(entityFactory.createFixedRectangle({ x: 0, y: physicsTop / 2 }, 1, physicsTop, 0x000000));
     const wall2 = world.addStaticObject(entityFactory.createFixedRectangle({ x: physicsRight, y: physicsTop / 2 }, 1, physicsTop, 0x000000));
     const wall3 = world.addStaticObject(entityFactory.createFixedRectangle({ x: 3 * physicsRight / 4, y: 1.5 }, 1, 2.5, 0x000000));
+    const wall4 = world.addStaticObject(entityFactory.createFixedRectangle({ x: 3 * physicsRight / 4 - 8, y: 1.5 }, 1, 2.5, 0x000000));
     const roof = world.addStaticObject(entityFactory.createFixedRectangle({ x: physicsRight / 2, y: physicsTop }, physicsRight, 1, 0x000000));
     const block = world.addStaticObject(entityFactory.createFixedRectangle({ x: 7 * physicsRight / 8, y: 4 }, 2, 2, 0x000000));
+    const blockData = [
+        [3 * physicsRight / 4 - 4, 4],
+        [3 * physicsRight / 4 - 8, 6.5],
+        [3 * physicsRight / 4 - 3, 9]
+    ];
+    blockData.forEach((block) => {
+        world.addStaticObject(entityFactory.createFixedRectangle({ x: block[0], y: block[1] }, 2, 2, 0x000000));
+    });
 
     document.body.appendChild(Papp.canvas);
 

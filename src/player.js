@@ -39,8 +39,8 @@ class Player {
         this.controls = {
             left: 0,       // Is pressing left
             right: 0,      // Is pressing right
-            jump: false,   // Is trying to jump
-            canJump: false // Can jump
+            jump: 0,   // Is trying to jump - greater than 0 means true, 0 means false
+            canJump: 0 // Can jump - greater than 0 means true, 0 means false
         };
 
         // Event listeners for player controls
@@ -50,8 +50,8 @@ class Player {
                 this.controls.left = -1;
             } else if (key == "d" || key == "arrowright") {
                 this.controls.right = 1;
-            } else if (key == "w" || key == "arrowup" || key == " ") {
-                this.controls.jump = true;
+            } else if (key == "w" || key == "arrowup" || key == " " || key == "c") {
+                this.controls.jump = app.settings.playerConstants.inputBufferTime;
             }
         };
         this.keyup = e => {
@@ -73,30 +73,38 @@ class Player {
     updateControls() {
         // Handle player moving left & right
         let sign = (this.controls.left + this.controls.right);
-        let changeSpeed = sign;
         let currSpeed = this.body.velocity;
         let newSpeed = currSpeed.x;
-        if (sign == 0) { // Slowdown
-            sign = 1;
-            if (newSpeed < 0) changeSpeed = app.settings.playerConstants.slowDown;
-            else if (newSpeed > 0) changeSpeed = -app.settings.playerConstants.slowDown;
-            if (Math.abs(newSpeed) <= app.settings.playerConstants.speed * app.settings.playerConstants.slowDown) {
-                newSpeed = 0;
-                changeSpeed = 0;
-            }
+        let currSign = Math.sign(newSpeed);
+        if (sign != currSign) { // Slowdown
+            newSpeed -= currSign * Math.min(app.settings.playerConstants.slowDown,
+                currSign * newSpeed);
+            // sign = 1;
+            // if (newSpeed < 0) changeSpeed = app.settings.playerConstants.slowDown;
+            // else if (newSpeed > 0) changeSpeed = -app.settings.playerConstants.slowDown;
+            // if (Math.abs(newSpeed) <= app.settings.playerConstants.speed * app.settings.playerConstants.slowDown) {
+            //     newSpeed = 0;
+            //     changeSpeed = 0;
+            // }
         }
-        newSpeed += app.settings.playerConstants.speed * changeSpeed;
-        if (changeSpeed != 0) {
+        newSpeed += app.settings.playerConstants.speed * sign;
+        // Limit speed
+        if (sign != 0) {
             newSpeed = sign * Math.min(sign * newSpeed, app.settings.playerConstants.maxSpeed);
         }
 
         // Handle player jump
         let jump = currSpeed.y;
-        if (this.controls.jump && this.controls.canJump) {
+        if (this.controls.jump != 0 && this.controls.canJump != 0) {
             jump = Math.max(jump, 0) + app.settings.playerConstants.jumpStrength;
+            this.controls.jump = 0;
+            this.controls.canJump = 0;
+        } else {
+            if (this.controls.jump != 0)
+                this.controls.jump -= 1;
+            if (this.controls.canJump != 0)
+                this.controls.canJump -= 1;
         }
-        this.controls.jump = false;
-        this.controls.canJump = false;
 
         this.body.velocity = { x: newSpeed, y: jump };
     }

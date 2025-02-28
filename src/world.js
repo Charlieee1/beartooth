@@ -238,7 +238,7 @@ class CustomWorld {
 
     // Physics step and rendering update
     step() {
-        app.player.controls.canJump = false;
+        // app.player.controls.canJump = false;
         this.player.velocity.y += app.settings.gravity;
         const prevX = this.player.x;
         const prevY = this.player.y;
@@ -265,7 +265,7 @@ class CustomWorld {
                         world.player.y = yLimit;
                         // If landing on top of a block, regain the player's jump
                         if (ySign === -1)
-                            app.player.controls.canJump = true;
+                            app.player.controls.canJump = app.settings.playerConstants.coyoteJumpTime;
                         playerMoved = true;
                         newYVel = 0;
                     }
@@ -346,11 +346,20 @@ class World {
         });
     }
 
+    // Update rendered scale of graphics objects
+    updateScale() {
+        this.dynamicObjects.forEach((obj) => {
+            obj.rendered.updateScale();
+        });
+    }
+
     // Update rendered position of all objects
     updateAll() {
         this.updatePosition();
+        this.updateScale();
         this.staticObjects.forEach((obj) => {
             obj.rendered.updatePosition();
+            obj.rendered.updateScale();
         });
     }
 
