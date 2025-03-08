@@ -36,7 +36,7 @@ async function main() {
     const world = new World(rapierWorld, Papp);
     app.world = world;
 
-    window.physicsTop = app.settings.mtow * .55;
+    window.physicsTop = app.settings.mtow * 1080 / 1920;
     window.physicsRight = app.settings.mtow;
 
     // Create player

@@ -24,6 +24,8 @@ const settings = {
     // Pixels to metres scale (rendering world to physics world)
     ptom: 40
 };
+settings.partitionCellWidth = settings.mtow;
+settings.partitionCellHeight = settings.mtow * 1080 / 1920;
 settings.ptom = window.innerWidth / settings.mtow;
 
 export { settings };
