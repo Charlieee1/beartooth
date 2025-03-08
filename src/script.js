@@ -62,7 +62,10 @@ async function main() {
     const blockData = [
         [3 * physicsRight / 4 - 4, 4],
         [3 * physicsRight / 4 - 8, 6.5],
-        [3 * physicsRight / 4 - 3, 9]
+        [3 * physicsRight / 4 - 3, 9],
+        [3 * physicsRight / 4 - 12, 9.5],
+        [3 * physicsRight / 4 - 16, 12.5],
+        [3 * physicsRight / 4 - 17, 13.5]
     ];
     blockData.forEach((block) => {
         world.addStaticObject(entityFactory.createFixedRectangle({ x: block[0], y: block[1] }, 2, 2, 0x000000));

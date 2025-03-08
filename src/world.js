@@ -240,6 +240,8 @@ class CustomWorld {
     step() {
         // app.player.controls.canJump = false;
         this.player.velocity.y += app.settings.gravity;
+        this.player.velocity.y = Math.max(this.player.velocity.y,
+            app.settings.playerConstants.maxFallSpeed);
         const prevX = this.player.x;
         const prevY = this.player.y;
         this.player.x += this.player.velocity.x;
@@ -302,6 +304,7 @@ class CustomWorld {
                 intersectingObjects = this.partitioning.getIntersectingObjects(this.player);
         }
         this.player.velocity = { x: newXVel, y: newYVel };
+        this.player.x = Number(this.player.x.toFixed(3));
     }
 }
 
