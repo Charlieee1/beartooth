@@ -4,6 +4,7 @@ import { EntityFactory } from './entityFactory.js';
 import { World } from './world.js';
 import { Player } from './player.js';
 import { settings } from './settings.js';
+import { Ticker } from './Ticker.js';
 
 // Create an async main function
 async function main() {
@@ -73,11 +74,28 @@ async function main() {
 
     document.body.appendChild(Papp.canvas);
 
-    // Game loop
-    setInterval(() => {
-        // Step the physics simulation forward
+    // Game loops
+    const ticker = new Ticker();
+
+    const updatePhysics = () => {
+        const startTime = Date.now();
+
         world.step();
-    }, 1000 / 60);
+
+        const endTime = Date.now();
+        setTimeout(updatePhysics, 1000 / 60 - (endTime - startTime));
+    };
+
+    const updateRendered = () => {
+        world.updatePosition();
+    };
+
+    updatePhysics();
+    ticker.add(updateRendered, -1);
+    ticker.start();
+
+    window.updatePhysics = updatePhysics;
+    window.updateRendered = updateRendered;
 
     // Resize function
     function resize() {

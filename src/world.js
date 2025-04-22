@@ -371,7 +371,6 @@ class World {
         this.customWorld.step();
         this.player.rigidBody.setNextKinematicTranslation(this.player.body);
         this.rapierWorld.step();
-        this.updatePosition();
     }
 
     getWorld() {
