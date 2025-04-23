@@ -7,6 +7,7 @@ const settings = {
         speed: .05,
         maxSpeed: .15,
         slowDown: .05,
+        weakSlowDown: .005,
         jumpStrength: .3,
         additionalJumpStrength: .03,
         additionalJumpTime: 8,

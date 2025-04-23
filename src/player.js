@@ -14,7 +14,7 @@ class Player {
     constants;
 
     constructor(position) {
-        let playerEntity = app.entityFactory.createKinematicRectangle(
+        const playerEntity = app.entityFactory.createKinematicRectangle(
             position,
             app.settings.playerWidth,
             app.settings.playerHeight,
@@ -26,6 +26,7 @@ class Player {
         this.colliderDesc = playerEntity.colliderDesc;
         this.collider = playerEntity.collider;
         this.rendered = playerEntity.rendered;
+        this.playerConstants = app.settings.playerConstants;
         // this.sensorDesc = RAPIER.ColliderDesc.cuboid(.5, 1)
         //     .setTranslation(0, -.75)
         //     .setDensity(0)
@@ -55,6 +56,9 @@ class Player {
             } else if ((key == "w" || key == "arrowup" || key == " " || key == "c") && !this.controls.pressingJump) {
                 this.controls.jump = app.settings.playerConstants.inputBufferTime;
                 this.controls.pressingJump = true;
+            } else if (key == "x") {
+                this.body.velocity.x *= 3;
+                this.body.velocity.y *= 1.5;
             }
         };
         this.keyup = e => {
@@ -76,29 +80,41 @@ class Player {
     }
 
     updateControls() {
+        const playerConstants = app.settings.playerConstants;
         // Handle player moving left & right
         let sign = (this.controls.left + this.controls.right);
         let currSpeed = this.body.velocity;
         let newSpeed = currSpeed.x;
         let currSign = Math.sign(newSpeed);
-        if (sign != currSign) { // Slowdown
-            newSpeed -= currSign * Math.min(app.settings.playerConstants.slowDown,
+        let xSpeed = newSpeed * currSign;
+        let rounding = 2;
+        if (sign != currSign) { // Normal slowdown
+            newSpeed -= currSign * Math.min(playerConstants.slowDown,
                 currSign * newSpeed);
         }
-        newSpeed += app.settings.playerConstants.speed * sign;
-        // Limit speed
-        if (sign != 0) {
-            newSpeed = sign * Math.min(sign * newSpeed, app.settings.playerConstants.maxSpeed);
+        if (sign == currSign && xSpeed > playerConstants.maxSpeed) { // Weaker slowdown
+            newSpeed -= playerConstants.weakSlowDown * currSign;
+            if (xSpeed - playerConstants.weakSlowDown < playerConstants.maxSpeed) {
+                newSpeed = playerConstants.maxSpeed * currSign;
+            }
+            rounding = 3;
+        } else { // Acceleration
+            newSpeed += playerConstants.speed * sign;
+            // Limit speed
+            if (sign != 0) {
+                newSpeed = sign * Math.min(sign * newSpeed, playerConstants.maxSpeed);
+            }
         }
+        newSpeed = Number(newSpeed.toFixed(rounding));
 
         // Handle player jump
         let jump = currSpeed.y;
         if (this.controls.jump != 0 && this.controls.canJump != 0) {
-            jump = Math.max(jump, 0) + app.settings.playerConstants.jumpStrength;
+            jump = Math.max(jump, 0) + playerConstants.jumpStrength;
             this.controls.jump = 0;
             this.controls.canJump = 0;
-            this.controls.isJumping = app.settings.playerConstants.additionalJumpTime
-                + app.settings.playerConstants.additionalJumpBuffer;
+            this.controls.isJumping = playerConstants.additionalJumpTime
+                + playerConstants.additionalJumpBuffer;
         } else {
             if (this.controls.jump != 0)
                 this.controls.jump -= 1;
@@ -107,14 +123,16 @@ class Player {
         }
         // Handle player holding jump
         if (this.controls.pressingJump && this.controls.isJumping != 0
-            && this.controls.isJumping <= app.settings.playerConstants.additionalJumpTime) {
-            jump += app.settings.playerConstants.additionalJumpStrength;
+            && this.controls.isJumping <= playerConstants.additionalJumpTime) {
+            jump += playerConstants.additionalJumpStrength;
             this.controls.isJumping--;
         } else if (this.controls.pressingJump == false) {
             this.controls.isJumping = 0;
         } else if (this.controls.isJumping != 0) {
             this.controls.isJumping--;
         }
+
+        console.log(newSpeed);
 
         this.body.velocity = { x: newSpeed, y: jump };
     }

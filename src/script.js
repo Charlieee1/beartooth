@@ -66,7 +66,8 @@ async function main() {
         [3 * physicsRight / 4 - 3, 9],
         [3 * physicsRight / 4 - 12, 9.5],
         [3 * physicsRight / 4 - 16, 12.5],
-        [3 * physicsRight / 4 - 17, 13.5]
+        [3 * physicsRight / 4 - 17, 13.5],
+        [7 * physicsRight / 8 + 2.5, 7]
     ];
     blockData.forEach((block) => {
         world.addStaticObject(entityFactory.createFixedRectangle({ x: block[0], y: block[1] }, 2, 2, 0x000000));
