@@ -43,7 +43,8 @@ class Player {
             jump: 0,             // Is trying to jump - greater than 0 means true, 0 means false
             canJump: 0,          // Can jump - greater than 0 means true, 0 means false
             pressingJump: false, // Is pressing a jump button
-            isJumping: 0         // Is currently jumping - greater than 0 means true, 0 means false
+            isJumping: 0,        // Is currently jumping - greater than 0 means true, 0 means false
+            slowDownDisabled: 0  // Is slowdown (two types) disabled
         };
 
         // Event listeners for player controls
@@ -54,7 +55,7 @@ class Player {
             } else if (key == "d" || key == "arrowright") {
                 this.controls.right = 1;
             } else if ((key == "w" || key == "arrowup" || key == " " || key == "c") && !this.controls.pressingJump) {
-                this.controls.jump = app.settings.playerConstants.inputBufferTime;
+                this.jump();
                 this.controls.pressingJump = true;
             } else if (key == "x") {
                 this.body.velocity.x *= 3;
@@ -75,6 +76,10 @@ class Player {
         window.addEventListener("keyup", this.keyup);
     }
 
+    jump() {
+        this.controls.jump = app.settings.playerConstants.inputBufferTime;
+    }
+
     updatePosition() {
         this.rendered.updatePosition();
     }
@@ -92,18 +97,22 @@ class Player {
             newSpeed -= currSign * Math.min(playerConstants.slowDown,
                 currSign * newSpeed);
         }
-        if (sign == currSign && xSpeed > playerConstants.maxSpeed) { // Weaker slowdown
-            newSpeed -= playerConstants.weakSlowDown * currSign;
-            if (xSpeed - playerConstants.weakSlowDown < playerConstants.maxSpeed) {
-                newSpeed = playerConstants.maxSpeed * currSign;
+        if (this.controls.slowDownDisabled != 0) {
+            if (sign == currSign && xSpeed > playerConstants.maxSpeed) { // Weaker slowdown
+                newSpeed -= playerConstants.weakSlowDown * currSign;
+                if (xSpeed - playerConstants.weakSlowDown < playerConstants.maxSpeed) {
+                    newSpeed = playerConstants.maxSpeed * currSign;
+                }
+                rounding = 3;
+            } else { // Acceleration
+                newSpeed += playerConstants.speed * sign;
+                // Limit speed
+                if (sign != 0) {
+                    newSpeed = sign * Math.min(sign * newSpeed, playerConstants.maxSpeed);
+                }
             }
-            rounding = 3;
-        } else { // Acceleration
-            newSpeed += playerConstants.speed * sign;
-            // Limit speed
-            if (sign != 0) {
-                newSpeed = sign * Math.min(sign * newSpeed, playerConstants.maxSpeed);
-            }
+        } else {
+            this.controls.slowDownDisabled--;
         }
         newSpeed = Number(newSpeed.toFixed(rounding));
 
@@ -115,6 +124,12 @@ class Player {
             this.controls.canJump = 0;
             this.controls.isJumping = playerConstants.additionalJumpTime
                 + playerConstants.additionalJumpBuffer;
+
+            // Add temporary speedboost for jumping while holding an arrow key
+            if (sign != 0) {
+                newSpeed += playerConstants.jumpSpeedBoost * sign;
+                this.controls.slowDownDisabled = 1
+            }
         } else {
             if (this.controls.jump != 0)
                 this.controls.jump -= 1;
@@ -131,8 +146,6 @@ class Player {
         } else if (this.controls.isJumping != 0) {
             this.controls.isJumping--;
         }
-
-        console.log(newSpeed);
 
         this.body.velocity = { x: newSpeed, y: jump };
     }

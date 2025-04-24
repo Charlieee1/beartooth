@@ -6,12 +6,13 @@ const settings = {
     playerConstants: {
         speed: .05,
         maxSpeed: .15,
-        slowDown: .05,
+        slowDown: .04,
         weakSlowDown: .005,
         jumpStrength: .3,
         additionalJumpStrength: .03,
         additionalJumpTime: 8,
         additionalJumpBuffer: 2,
+        jumpSpeedBoost: .01,
         inputBufferTime: 3,
         coyoteJumpTime: 5,
         maxFallSpeed: -.6

@@ -11,6 +11,7 @@ async function main() {
     const app = {}
     window.app = app;
     app.settings = settings;
+    app.paused = false;
 
     // Create a Pixi Application
     const Papp = new PIXI.Application();
@@ -59,15 +60,19 @@ async function main() {
     const wall3 = world.addStaticObject(entityFactory.createFixedRectangle({ x: 3 * physicsRight / 4, y: 1.5 }, 1, 2.5, 0x000000));
     const wall4 = world.addStaticObject(entityFactory.createFixedRectangle({ x: 3 * physicsRight / 4 - 8, y: 1.5 }, 1, 2.5, 0x000000));
     const roof = world.addStaticObject(entityFactory.createFixedRectangle({ x: physicsRight / 2, y: physicsTop }, physicsRight, 1, 0x000000));
-    const block = world.addStaticObject(entityFactory.createFixedRectangle({ x: 7 * physicsRight / 8, y: 4 }, 2, 2, 0x000000));
     const blockData = [
+        [7 * physicsRight / 8, 4],
         [3 * physicsRight / 4 - 4, 4],
         [3 * physicsRight / 4 - 8, 6.5],
         [3 * physicsRight / 4 - 3, 9],
         [3 * physicsRight / 4 - 12, 9.5],
         [3 * physicsRight / 4 - 16, 12.5],
         [3 * physicsRight / 4 - 17, 13.5],
-        [7 * physicsRight / 8 + 2.5, 7]
+        [7 * physicsRight / 8 + 2.5, 7],
+        [physicsRight - .5, 10],
+        [physicsRight - 4, 12],
+        [physicsRight - 5.06, 12.3 - .03],
+        [physicsRight - 6.12, 12.6 - .06],
     ];
     blockData.forEach((block) => {
         world.addStaticObject(entityFactory.createFixedRectangle({ x: block[0], y: block[1] }, 2, 2, 0x000000));
@@ -78,10 +83,18 @@ async function main() {
     // Game loops
     const ticker = new Ticker();
 
+    window.addEventListener("keypress", e => {
+        if (e.key == "p") {
+            app.paused = true;
+        }
+    });
+
     const updatePhysics = () => {
         const startTime = Date.now();
 
-        world.step();
+        if (!app.paused) {
+            world.step();
+        }
 
         const endTime = Date.now();
         setTimeout(updatePhysics, 1000 / 60 - (endTime - startTime));

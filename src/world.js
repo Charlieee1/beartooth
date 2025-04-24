@@ -220,15 +220,15 @@ class CustomWorld {
     objects = [];
     partitioning;
     player;
-    // Temporary to test movement of player
-    direction = 1;
+    controls;
 
-    constructor(player) {
+    constructor() {
         this.partitioning = new SpatialPartitioning(app.settings.partitionCellWidth, app.settings.partitionCellHeight);
     }
 
     setPlayer(player) {
-        this.player = player;
+        this.player = player.body;
+        this.controls = player.controls;
     }
 
     addObject(object) {
@@ -278,7 +278,7 @@ class CustomWorld {
                     if (xSign * world.player.x > xSign * xLimit && xSign * prevX <= xSign * xLimit) {
                         world.player.x = xLimit;
                         // Enable walljumping
-                        //app.player.controls.canJump = true;
+                        //this.controls.canWallJump = -xSign;
                         playerMoved = true;
                         newXVel = 0;
                     }
@@ -304,7 +304,23 @@ class CustomWorld {
                 intersectingObjects = this.partitioning.getIntersectingObjects(this.player);
         }
         this.player.velocity = { x: newXVel, y: newYVel };
+
+        // Rounding player x position to make precise alignment of player easier
+        let oldX = this.player.x;
         this.player.x = Number(this.player.x.toFixed(3));
+        if (this.partitioning.getIntersectingObjects(this.player).length > 0) {
+            this.player.x = oldX;
+        } else {
+            // Usually blocks are aligned to the first decimal place
+            // For smooth movement, it's best not to align the player so harshly
+            oldX = this.player.x;
+            if (this.player.velocity.x == 0) {
+                this.player.x = Number(this.player.x.toFixed(1));
+            }
+            if (this.partitioning.getIntersectingObjects(this.player).length > 0) {
+                this.player.x = oldX;
+            }
+        }
     }
 }
 
@@ -324,7 +340,7 @@ class World {
     }
 
     setPlayer(player) {
-        this.customWorld.setPlayer(player.body);
+        this.customWorld.setPlayer(player);
         this.player = player;
         this.dynamicObjects.push(player);
     }
