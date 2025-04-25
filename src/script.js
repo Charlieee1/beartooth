@@ -113,10 +113,20 @@ async function main() {
 
     // Resize function
     function resize() {
-        Papp.renderer.resize(window.innerWidth, window.innerHeight);
-        app.settings.ptom = window.innerWidth / app.settings.mtow;
+        if (window.innerWidth / window.innerHeight >= 1920 / 1080) {
+            Papp.renderer.resize(window.innerHeight * 1920 / 1080, window.innerHeight);
+            app.settings.ptom = window.innerHeight / (app.settings.mtow * 1080 / 1920);
+            Papp.canvas.style.width = `${100 * 1920 / 1080}vh`;
+            Papp.canvas.style.height = `100vh`;
+        } else {
+            Papp.renderer.resize(window.innerWidth, window.innerWidth * 1080 / 1920);
+            app.settings.ptom = window.innerWidth / app.settings.mtow;
+            Papp.canvas.style.width = `100vw`;
+            Papp.canvas.style.height = `${100 * 1080 / 1920}vw`;
+        }
         world.updateAll();
     }
+    resize();
 
     // Add event listener for window resize
     window.addEventListener('resize', resize);

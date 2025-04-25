@@ -33,7 +33,8 @@ npm run pages
 ## TODO
 This game is a work in progress. Here is my plan for next features:
 - Corner clipping
-- Camera view range adjustments
+- Pre calculating future frames
+- Player position interpolation
 - Wall jumping
 - Camera position adjustments
 I want to add more after this, but I do not have a plan for anything further.

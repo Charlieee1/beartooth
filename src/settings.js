@@ -28,6 +28,10 @@ const settings = {
 };
 settings.partitionCellWidth = settings.mtow;
 settings.partitionCellHeight = settings.mtow * 1080 / 1920;
-settings.ptom = window.innerWidth / settings.mtow;
+if (window.innerWidth / window.innerHeight >= 1920 / 1080) {
+    settings.ptom = window.innerWidth / settings.mtow;
+} else {
+    settings.ptom = window.innerHeight / (settings.mtow * 1080 / 1920);
+}
 
 export { settings };
