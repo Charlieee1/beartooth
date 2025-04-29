@@ -11,7 +11,7 @@ class Player {
     keyup;
 
     controls;
-    constants;
+    playerConstants;
 
     constructor(position) {
         const playerEntity = app.entityFactory.createKinematicRectangle(
@@ -36,7 +36,6 @@ class Player {
         //     this.controls.canJump = true;
         // };
 
-        this.constants = app.settings.playerControls;
         this.controls = {
             left: 0,             // Is pressing left
             right: 0,            // Is pressing right

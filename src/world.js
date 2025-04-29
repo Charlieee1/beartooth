@@ -221,6 +221,7 @@ class CustomWorld {
     partitioning;
     player;
     controls;
+    playerConstants;
 
     constructor() {
         this.partitioning = new SpatialPartitioning(app.settings.partitionCellWidth, app.settings.partitionCellHeight);
@@ -229,6 +230,7 @@ class CustomWorld {
     setPlayer(player) {
         this.player = player.body;
         this.controls = player.controls;
+        this.playerConstants = player.playerConstants;
     }
 
     addObject(object) {
@@ -238,7 +240,6 @@ class CustomWorld {
 
     // Physics step and rendering update
     step() {
-        // app.player.controls.canJump = false;
         this.player.velocity.y += app.settings.gravity;
         this.player.velocity.y = Math.max(this.player.velocity.y,
             app.settings.playerConstants.maxFallSpeed);
@@ -258,29 +259,67 @@ class CustomWorld {
             while (intersectingObjects.length > 0) {
                 // Handle intersection by moving back player required amount
                 const interObj = intersectingObjects.pop();
+                const totalWidth = .5 * (this.player.width + interObj.width);
+                const totalHeight = .5 * (this.player.height + interObj.height);
+
+                // Whether the player should clip through blocks for corner clipping
+                // let yClipThrough = false;
 
                 // Functions for handling y value and x value calculations
                 function calcY(world) {
                     // The maximum (or minimum) y value the player can go to
-                    const yLimit = interObj.y - .5 * ySign * (interObj.height + world.player.height);
-                    if (ySign * world.player.y > ySign * yLimit && ySign * prevY <= ySign * yLimit) {
+                    const yLimit = interObj.y - ySign * totalHeight;
+                    if (ySign * world.player.y > ySign * yLimit && (ySign * prevY <= ySign * yLimit)) {
                         world.player.y = yLimit;
                         // If landing on top of a block, regain the player's jump
                         if (ySign === -1)
-                            app.player.controls.canJump = app.settings.playerConstants.coyoteJumpTime;
+                            world.controls.canJump = app.settings.playerConstants.coyoteJumpTime;
                         playerMoved = true;
                         newYVel = 0;
                     }
                 }
                 function calcX(world) {
-                    // The maximum (or minimum) x value the player can go to
-                    const xLimit = interObj.x - .5 * xSign * (interObj.width + world.player.width);
-                    if (xSign * world.player.x > xSign * xLimit && xSign * prevX <= xSign * xLimit) {
-                        world.player.x = xLimit;
-                        // Enable walljumping
-                        //this.controls.canWallJump = -xSign;
+                    // Top corner to top edge & bottom corner to bottom edge corner clipping
+                    // Side edge to top edge & side edge to bottom edge
+                    const xClipSign = Math.sign(world.player.y - interObj.y);
+
+                    // Check for horizontal corner clipping
+                    // Ensure the player is trying to move in the correct direction
+                    let cornerClipEnabled = app.player.controls.left + app.player.controls.right == Math.sign(interObj.x - world.player.x);
+                    if (cornerClipEnabled) {
+                        // Ensure the player is beyond the edge horizontally
+                        cornerClipEnabled = xSign * (prevX - interObj.x) + totalWidth <= 0;
+                    }
+                    // Ensure the player is close enough to the edge vertically (next 2 if statements)
+                    const wasCornerClipEnabled = cornerClipEnabled;
+                    if (cornerClipEnabled) {
+                        // Check for corner clipping
+                        cornerClipEnabled = Math.abs(prevY - xClipSign * totalHeight - interObj.y)
+                            <= world.playerConstants.horizontalCornerClip
+                    }
+                    if (cornerClipEnabled) {
+                        // Ensure the player is beyond the edge vertically if corner clipping
+                        cornerClipEnabled = ySign * (prevY - interObj.y) + totalHeight <= world.playerConstants.horizontalCornerClip;
+                    }
+                    if (!cornerClipEnabled && wasCornerClipEnabled) {
+                        // Check for corner clip through
+                        cornerClipEnabled = Math.abs(world.player.y - xClipSign * totalHeight - interObj.y)
+                            <= world.playerConstants.horizontalClipThrough;
+                    }
+
+                    if (cornerClipEnabled) {
+                        world.player.y = interObj.y + xClipSign * totalHeight;
                         playerMoved = true;
-                        newXVel = 0;
+                    } else {
+                        // The maximum (or minimum) x value the player can go to
+                        const xLimit = interObj.x - xSign * totalWidth;
+                        if (xSign * world.player.x > xSign * xLimit && xSign * prevX <= xSign * xLimit) {
+                            world.player.x = xLimit;
+                            // Enable walljumping
+                            //app.player.controls.canWallJump = -xSign;
+                            playerMoved = true;
+                            newXVel = 0;
+                        }
                     }
                 }
 
@@ -311,6 +350,7 @@ class CustomWorld {
         if (this.partitioning.getIntersectingObjects(this.player).length > 0) {
             this.player.x = oldX;
         } else {
+            // TODO: remove aligning to 1 decimal place
             // Usually blocks are aligned to the first decimal place
             // For smooth movement, it's best not to align the player so harshly
             oldX = this.player.x;

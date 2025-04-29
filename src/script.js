@@ -59,6 +59,7 @@ async function main() {
     const wall2 = world.addStaticObject(entityFactory.createFixedRectangle({ x: physicsRight, y: physicsTop / 2 }, 1, physicsTop, 0x000000));
     const wall3 = world.addStaticObject(entityFactory.createFixedRectangle({ x: 3 * physicsRight / 4, y: 1.5 }, 1, 2.5, 0x000000));
     const wall4 = world.addStaticObject(entityFactory.createFixedRectangle({ x: 3 * physicsRight / 4 - 8, y: 1.5 }, 1, 2.5, 0x000000));
+    // const wall5 = world.addStaticObject(entityFactory.createFixedRectangle({ x: physicsRight / 4 + 4, y: 1.5 }, 1, 2.5, 0x000000));
     const roof = world.addStaticObject(entityFactory.createFixedRectangle({ x: physicsRight / 2, y: physicsTop }, physicsRight, 1, 0x000000));
     const blockData = [
         [7 * physicsRight / 8, 4],
@@ -71,9 +72,14 @@ async function main() {
         [7 * physicsRight / 8 + 2.5, 7],
         [physicsRight - .5, 10],
         [physicsRight - 4, 12],
-        [physicsRight - 5.06, 12.3 - .03],
-        [physicsRight - 6.12, 12.6 - .06],
+        [physicsRight - 5.1, 12.2],
+        [physicsRight - 6.2, 12.4],
+        [physicsRight / 4 - .8, 15.5],
+        [physicsRight / 4 - 1.8, 9.9],
     ];
+    for (let i = 0; i <= 10; i++) {
+        blockData.push([physicsRight / 4 - 4 - .01 * i, 9.9 + .3 * i]);
+    }
     blockData.forEach((block) => {
         world.addStaticObject(entityFactory.createFixedRectangle({ x: block[0], y: block[1] }, 2, 2, 0x000000));
     });
@@ -104,7 +110,7 @@ async function main() {
         world.updatePosition();
     };
 
-    updatePhysics();
+    setTimeout(updatePhysics, 0);
     ticker.add(updateRendered, -1);
     ticker.start();
 

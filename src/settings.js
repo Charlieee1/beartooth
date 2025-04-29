@@ -15,7 +15,11 @@ const settings = {
         jumpSpeedBoost: .01,
         inputBufferTime: 3,
         coyoteJumpTime: 5,
-        maxFallSpeed: -.6
+        maxFallSpeed: -.6,
+        horizontalCornerClip: .35,
+        horizontalClipThrough: .2,
+        verticalCornerClip: .25,
+        verticalClipThrough: .25,
     },
     gravity: -.03,
     rapierGravity: -50,
@@ -24,7 +28,7 @@ const settings = {
     // Metres per window width
     mtow: 40,
     // Pixels to metres scale (rendering world to physics world)
-    ptom: 40
+    ptom: 40,
 };
 settings.partitionCellWidth = settings.mtow;
 settings.partitionCellHeight = settings.mtow * 1080 / 1920;
