@@ -21,6 +21,7 @@ class Player {
             app.settings.playerColour
         );
         this.body = playerEntity.body;
+        this.body.lastYSurface = null;
         this.rigidBodyDesc = playerEntity.rigidBodyDesc;
         this.rigidBody = playerEntity.rigidBody;
         this.colliderDesc = playerEntity.colliderDesc;

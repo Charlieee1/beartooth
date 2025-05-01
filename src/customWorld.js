@@ -57,44 +57,76 @@ export class CustomWorld {
     }
 
     // Functions for handling y value and x value calculations
-    // The world argument seems like it should be replaced with this, but it breaks everything so I don't do that
-    calcY(world, interObj, totalWidth, totalHeight, sign, newVel, prevX, prevY) {
+    calcY(interObj, totalWidth, totalHeight, sign, newVel, prevX, prevY) {
         let playerMoved = false;
+        const xSign = sign.x;
         const ySign = sign.y;
-        // The maximum (or minimum) y value the player can go to
-        const yLimit = interObj.y - ySign * totalHeight;
-        if (ySign * world.player.y > ySign * yLimit && (ySign * prevY <= ySign * yLimit)) {
-            world.player.y = yLimit;
-            // If landing on top of a block, regain the player's jump
-            if (ySign === -1)
-                world.controls.canJump = app.settings.playerConstants.coyoteJumpTime;
+
+        // Top edge to side edge & bottom edge to side edge
+        const verticalClipThroughSpeed = ySign === 1 ? this.playerConstants.verticalClipThroughSpeedUp : this.playerConstants.verticalClipThroughSpeedDown;
+        let yClipSign = Math.sign(this.player.x - interObj.x);
+        if (yClipSign === 0)
+            yClipSign = 1;
+        // Ensure the player is travelling quickly enough to clip
+        let cornerClipEnabled = Math.abs(this.player.velocity.y) >= verticalClipThroughSpeed;
+        // Ensure the player is falling from a different surface for clipping down
+        if (cornerClipEnabled) {
+            cornerClipEnabled = this.player.lastYSurface != interObj.y + totalHeight || ySign === 1;
+        }
+        // Ensure the player is not moving towards the object horizontally
+        if (cornerClipEnabled) {
+            cornerClipEnabled = !(this.controls.left + this.controls.right == Math.sign(interObj.x - this.player.x));
+        }
+        if (cornerClipEnabled) {
+            cornerClipEnabled = this.checkCornerClip(this.player.y, this.player.x, interObj.y, interObj.x,
+                totalHeight, totalWidth, Math.sign(this.player.velocity.y),
+                0, this.playerConstants.verticalClipThrough,
+                ySign, xSign, yClipSign, prevY, prevX
+            );
+        }
+
+        if (cornerClipEnabled) {
+            this.player.x = interObj.x + yClipSign * totalWidth;
             playerMoved = true;
-            newVel.y = 0;
+        } else {
+            // The maximum (or minimum) y value the player can go to
+            const yLimit = interObj.y - ySign * totalHeight;
+            if (ySign * this.player.y > ySign * yLimit && (ySign * prevY <= ySign * yLimit)) {
+                this.player.y = yLimit;
+                // If landing on top of a block, regain the player's jump
+                if (ySign === -1) {
+                    this.controls.canJump = app.settings.playerConstants.coyoteJumpTime;
+                    this.player.lastYSurface = yLimit;
+                }
+                playerMoved = true;
+                newVel.y = 0;
+            }
         }
         return playerMoved;
     }
 
-    calcX(world, interObj, totalWidth, totalHeight, sign, newVel, prevX, prevY) {
+    calcX(interObj, totalWidth, totalHeight, sign, newVel, prevX, prevY) {
         let playerMoved = false;
         const xSign = sign.x;
         const ySign = sign.y;
+
         // Top corner to top edge & bottom corner to bottom edge corner clipping
         // Side edge to top edge & side edge to bottom edge
-        const xClipSign = Math.sign(world.player.y - interObj.y);
-        const cornerClipEnabled = world.checkCornerClip(world.player.x, world.player.y, interObj.x, interObj.y,
+        const xClipSign = Math.sign(this.player.y - interObj.y);
+        const cornerClipEnabled = this.checkCornerClip(this.player.x, this.player.y, interObj.x, interObj.y,
             totalWidth, totalHeight, app.player.controls.left + app.player.controls.right,
-            world.playerConstants.horizontalCornerClip, world.playerConstants.horizontalClipThrough,
+            this.playerConstants.horizontalCornerClip, this.playerConstants.horizontalClipThrough,
             xSign, ySign, xClipSign, prevX, prevY
         );
 
         if (cornerClipEnabled) {
-            world.player.y = interObj.y + xClipSign * totalHeight;
+            this.player.y = interObj.y + xClipSign * totalHeight;
             playerMoved = true;
         } else {
             // The maximum (or minimum) x value the player can go to
             const xLimit = interObj.x - xSign * totalWidth;
-            if (xSign * world.player.x > xSign * xLimit && xSign * prevX <= xSign * xLimit) {
-                world.player.x = xLimit;
+            if (xSign * this.player.x > xSign * xLimit && xSign * prevX <= xSign * xLimit) {
+                this.player.x = xLimit;
                 // Enable walljumping
                 //app.player.controls.canWallJump = -xSign;
                 playerMoved = true;
@@ -133,17 +165,17 @@ export class CustomWorld {
                 const totalHeight = .5 * (this.player.height + interObj.height);
 
                 // Determining order of checking x & y
-                let calc1 = this.calcX;
-                let calc2 = this.calcY;
+                let calc1 = this.calcX.bind(this);
+                let calc2 = this.calcY.bind(this);
                 if (Math.abs(this.player.velocity.y) <= Math.abs(this.player.velocity.x)) {
-                    calc1 = this.calcY;
-                    calc2 = this.calcX;
+                    calc1 = this.calcY.bind(this);
+                    calc2 = this.calcX.bind(this);
                 }
 
                 // Check in correct order, skipping the second check if possible
-                playerMoved = calc1(this, interObj, totalWidth, totalHeight, sign, newVel, prevX, prevY);
+                playerMoved = calc1(interObj, totalWidth, totalHeight, sign, newVel, prevX, prevY);
                 if (this.partitioning.checkIntersect(interObj, this.player)) {
-                    playerMoved |= calc2(this, interObj, totalWidth, totalHeight, sign, newVel, prevX, prevY);
+                    playerMoved |= calc2(interObj, totalWidth, totalHeight, sign, newVel, prevX, prevY);
                 }
             }
 

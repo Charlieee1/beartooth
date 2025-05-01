@@ -32,12 +32,6 @@ npm run pages
 
 ## TODO
 This game is a work in progress. Here is my plan for next features:
-- Corner clipping
-  - Vertical (clip and clip through)
-    - Top corner to side edge
-    - Bottom corner to side edge
-    - Top edge to side edge
-    - Bottom edge to side edge
 - Fast falling
 - Crouching
 - Pre calculating future frames

@@ -76,6 +76,8 @@ async function main() {
         [physicsRight - 6.2, 12.4],
         [physicsRight / 4 - .8, 15.5],
         [physicsRight / 4 - 1.8, 9.9],
+        [physicsRight / 4 - 8, 17],
+        [physicsRight / 4 - 7.8, 7],
     ];
     for (let i = 0; i <= 10; i++) {
         blockData.push([physicsRight / 4 - 4 - .01 * i, 9.9 + .3 * i]);
