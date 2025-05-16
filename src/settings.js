@@ -16,6 +16,7 @@ const settings = {
         inputBufferTime: 3,
         coyoteJumpTime: 5,
         maxFallSpeed: -.6,
+        maxFastFallSpeed: -1.2,
         horizontalCornerClip: .35,
         horizontalClipThrough: .2,
         verticalClipThroughSpeedUp: .15,

@@ -44,7 +44,8 @@ class Player {
             canJump: 0,          // Can jump - greater than 0 means true, 0 means false
             pressingJump: false, // Is pressing a jump button
             isJumping: 0,        // Is currently jumping - greater than 0 means true, 0 means false
-            slowDownDisabled: 0  // Is slowdown (two types) disabled
+            slowDownDisabled: 0, // Is slowdown (two types) disabled
+            down: false,         // Is pressing down
         };
 
         // Event listeners for player controls
@@ -60,6 +61,8 @@ class Player {
             } else if (key == "x") {
                 this.body.velocity.x *= 3;
                 this.body.velocity.y *= 1.5;
+            } else if (key == "s" || key == "arrowdown") {
+                this.controls.down = true;
             }
         };
         this.keyup = e => {
@@ -70,6 +73,8 @@ class Player {
                 this.controls.right = 0;
             } else if (key == "w" || key == "arrowup" || key == " " || key == "c") {
                 this.controls.pressingJump = false;
+            } else if (key == "s" || key == "arrowdown") {
+                this.controls.down = false;
             }
         }
         window.addEventListener("keydown", this.keydown);

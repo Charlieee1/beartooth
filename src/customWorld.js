@@ -139,8 +139,14 @@ export class CustomWorld {
     // Physics step and rendering update
     step() {
         this.player.velocity.y += app.settings.gravity;
-        this.player.velocity.y = Math.max(this.player.velocity.y,
-            app.settings.playerConstants.maxFallSpeed);
+        if (!this.controls.down) {
+            this.player.velocity.y = Math.max(this.player.velocity.y,
+                app.settings.playerConstants.maxFallSpeed);
+        } else {
+            this.player.velocity.y = Math.max(this.player.velocity.y,
+                app.settings.playerConstants.maxFastFallSpeed);
+            console.log(this.player.velocity.y);
+        }
         const prevX = this.player.x;
         const prevY = this.player.y;
         this.player.x += this.player.velocity.x;
