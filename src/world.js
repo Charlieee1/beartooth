@@ -60,6 +60,7 @@ class World {
 
     step() {
         this.player.updateControls();
+        this.player.update();
         this.customWorld.step();
         this.player.rigidBody.setNextKinematicTranslation(this.player.body);
         this.rapierWorld.step();

@@ -16,6 +16,7 @@ export class CustomWorld {
         this.player = player.body;
         this.controls = player.controls;
         this.playerConstants = player.playerConstants;
+        this.rawPlayer = player;
     }
 
     addObject(object) {
@@ -113,11 +114,15 @@ export class CustomWorld {
         // Top corner to top edge & bottom corner to bottom edge corner clipping
         // Side edge to top edge & side edge to bottom edge
         const xClipSign = Math.sign(this.player.y - interObj.y);
-        const cornerClipEnabled = this.checkCornerClip(this.player.x, this.player.y, interObj.x, interObj.y,
-            totalWidth, totalHeight, app.player.controls.left + app.player.controls.right,
-            this.playerConstants.horizontalCornerClip, this.playerConstants.horizontalClipThrough,
-            xSign, ySign, xClipSign, prevX, prevY
-        );
+        let cornerClipEnabled = true;
+        if (xClipSign === 0)
+            cornerClipEnabled = false;
+        else
+            cornerClipEnabled = this.checkCornerClip(this.player.x, this.player.y, interObj.x, interObj.y,
+                totalWidth, totalHeight, app.player.controls.left + app.player.controls.right,
+                this.playerConstants.horizontalCornerClip, this.playerConstants.horizontalClipThrough,
+                xSign, ySign, xClipSign, prevX, prevY
+            );
 
         if (cornerClipEnabled) {
             this.player.y = interObj.y + xClipSign * totalHeight;
@@ -139,13 +144,17 @@ export class CustomWorld {
     // Physics step and rendering update
     step() {
         this.player.velocity.y += app.settings.gravity;
-        if (!this.controls.down) {
+        if (!this.controls.down || this.player.velocity.y === app.settings.gravity) {
+            if (this.player.width != app.settings.playerWidth)
+                this.rawPlayer.lerpSize(this.playerConstants.lerpFastFall1, app.settings.playerWidth, app.settings.playerHeight);
             this.player.velocity.y = Math.max(this.player.velocity.y,
-                app.settings.playerConstants.maxFallSpeed);
+                this.playerConstants.maxFallSpeed);
         } else {
+            if (this.player.width === app.settings.playerWidth)
+                if (this.player.velocity.y < .75 * this.playerConstants.maxFallSpeed)
+                    this.rawPlayer.lerpSize(this.playerConstants.lerpFastFall2, this.playerConstants.fastFallWidth, this.playerConstants.fastFallHeight);
             this.player.velocity.y = Math.max(this.player.velocity.y,
-                app.settings.playerConstants.maxFastFallSpeed);
-            console.log(this.player.velocity.y);
+                this.playerConstants.maxFastFallSpeed);
         }
         const prevX = this.player.x;
         const prevY = this.player.y;

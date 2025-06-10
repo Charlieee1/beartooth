@@ -29,8 +29,8 @@ class EntityFactory {
         renderedRect.x = app.settings.ptom * (translation.x - width / 2);
         renderedRect.y = app.Papp.screen.height - app.settings.ptom * (translation.y + height / 2);
         renderedRect.updatePosition = function () {
-            renderedRect.x = app.settings.ptom * (rigidBody.translation().x - width / 2);
-            renderedRect.y = app.Papp.screen.height - app.settings.ptom * (rigidBody.translation().y + height / 2);
+            renderedRect.x = app.settings.ptom * (rigidBody.translation().x - body.width / 2);
+            renderedRect.y = app.Papp.screen.height - app.settings.ptom * (rigidBody.translation().y + body.height / 2);
         }
         renderedRect.updateScale = function () {
             renderedRect.width = 2 * colliderDesc.shape.halfExtents.x * app.settings.ptom;

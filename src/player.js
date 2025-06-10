@@ -1,4 +1,4 @@
-import * as RAPIER from '@dimforge/rapier2d';
+import lerp from 'lerp';
 
 class Player {
     body;
@@ -97,7 +97,6 @@ class Player {
         let newSpeed = currSpeed.x;
         let currSign = Math.sign(newSpeed);
         let xSpeed = newSpeed * currSign;
-        let rounding = 2;
         if (sign != currSign) { // Normal slowdown
             newSpeed -= currSign * Math.min(playerConstants.slowDown,
                 currSign * newSpeed);
@@ -108,7 +107,6 @@ class Player {
                 if (xSpeed - playerConstants.weakSlowDown < playerConstants.maxSpeed) {
                     newSpeed = playerConstants.maxSpeed * currSign;
                 }
-                rounding = 3;
             } else { // Acceleration
                 newSpeed += playerConstants.speed * sign;
                 // Limit speed
@@ -119,7 +117,6 @@ class Player {
         } else {
             this.controls.slowDownDisabled--;
         }
-        newSpeed = Number(newSpeed.toFixed(rounding));
 
         // Handle player jump
         let jump = currSpeed.y;
@@ -153,6 +150,77 @@ class Player {
         }
 
         this.body.velocity = { x: newSpeed, y: jump };
+    }
+
+    update() {
+        if (this.lerp) {
+            this.lerp.progress++;
+            if (!this.setSize(
+                Math.round(lerp(this.lerp.oldWidth, this.lerp.width, this.lerp.delta * this.lerp.progress)),
+                Math.round(lerp(this.lerp.oldHeight, this.lerp.height, this.lerp.delta * this.lerp.progress))
+            ))
+                this.lerp.progress--; // This can lead to weird (and very fun!) behaviour
+            else if (this.lerp.progress === this.lerp.frames)
+                this.lerp = false;
+        }
+    }
+
+    lerpSize(frames, width = -1, height = -1, preserveArea = true) {
+        const oldWidth = this.body.width;
+        const oldHeight = this.body.height;
+        const prevArea = oldWidth * oldHeight;
+        if (preserveArea) {
+            if (height === -1)
+                height = prevArea / width;
+            else if (width === -1)
+                width = prevArea / height;
+        }
+        this.lerp = {
+            progress: 0,
+            delta: 1 / frames,
+            frames: frames,
+            oldWidth: oldWidth,
+            oldHeight: oldHeight,
+            width: width,
+            height: height
+        }
+    }
+
+    setSize(width = -1, height = -1, preserveArea = true) {
+        const oldX = this.body.x;
+        const oldY = this.body.y;
+        const oldWidth = this.body.width;
+        const oldHeight = this.body.height;
+        const prevArea = oldWidth * oldHeight;
+        if (preserveArea) {
+            if (height === -1)
+                height = prevArea / width;
+            else if (width === -1)
+                width = prevArea / height;
+        }
+
+        this.body.y = oldY + .5 * (-oldHeight + height);
+        this.body.width = width;
+        this.body.height = height;
+
+        if (app.world.customWorld.partitioning.getIntersectingObjects(this.body).length > 0) {
+            this.body.y = oldY
+            this.body.width = oldWidth;
+            this.body.height = oldHeight;
+            return false;
+        }
+
+        width *= .5;
+        height *= .5;
+        this.rigidBody.setNextKinematicTranslation(this.body);
+        // this.colliderDesc.setTranslation(this.body.x, this.body.y);
+        this.colliderDesc.shape.halfExtents.x = width;
+        this.colliderDesc.shape.halfExtents.y = height;
+        // this.collider.setTranslation(this.body);
+        this.collider.setHalfExtents({ x: width, y: height });
+        this.rendered.updatePosition();
+        this.rendered.updateScale();
+        return true;
     }
 }
 
